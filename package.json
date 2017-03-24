@@ -1,0 +1,23 @@
+{
+  "name": "changelog",
+  "version": "0.0.1",
+  "description": "Command line changelogging tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "author": "Chris Neale",
+  "license": "ISC",
+  "preferGlobal": true,
+  "bin": {
+    "clog": "index.js"
+  },
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "commander": "^2.9.0",
+    "dateformat": "^2.0.0",
+    "git-raw-commits": "^1.2.0",
+    "jsonfile": "^2.4.0",
+    "through2": "^2.0.3"
+  }
+}
