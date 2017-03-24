@@ -1,54 +1,40 @@
 #!/usr/bin/env node
 
 var clogLog = require('./clogLog');
+var util = require('util');
 var program = require('commander');
 var table = require('cli-table');
 var dateFormat = require('dateformat');
-var through = require('through2');
-var gitRawCommits = require('git-raw-commits');
-var conventionalCommitsParser = require('conventional-commits-parser');
+var gitCommits = require('git-commits');
 
 clogLog.check();
 
 program
     .version('0.0.1')
     .description('Changelog manager')
-    .option('-i, --init', 'Start a changelog')
-    .option('-g, --git', 'Update changlog from git commits')
-    .option('-t, --trial', 'Trial run. Changes are not written to the log')
     .option('-c, --changelog [# of entries]', 'View changelog')
-    .option('-d, --delete', 'Delete the latest changelog entry')
-    .option('-m, --message [msg]', 'Add an entry to the changelog');
+    .option('-m, --message [msg]', 'Add an entry to the changelog')
+    .option('-d, --delete [# of entries]', 'Delete the latest changelog entries')
+    .option('-g, --git', 'Update changelog from git commits')
+    .option('-t, --trial', 'Trial run. Changes are not written to the log')
+    .option('-i, --id [entry ID]', 'Delete a specific changelog entry');
 
 program.parse(process.argv);
 
 if (program.git) {
 
-    var i = 0;
-
-    var options = {
-        transform:
-            (function() {
-              through.obj(function(chunk, enc, cb) {
-                console.log("custom transform called ... ");
-                cb(null, chunk);
-              })
-            }
-          )()
+    gitCommits(process.cwd() + '/.git', {
+        limit: 2
+    }).on('data', function(commit) {
+        var change = util.format('%s (%s)', commit.title.trim(), commit.hash.substring(0,6) );
+        if (!program.trial) {
+            clogLog.append(change);
+        } else {
+            console.log('Log updated: ', change);
         }
-
-    gitRawCommits({ since: '2017-03-23', source: true })
-        .pipe(conventionalCommitsParser())
-        .pipe(through({ objectMode: true }, function(chunk, enc, cb) {
-            if (!program.trial) {
-                clogLog.append(chunk.header.trim());
-            } else {
-                console.log('Log updated: ', chunk.header.trim());
-            }
-            cb();
-        }, function() {
-            console.log("updated from git, updating meta");
-        }));
+    }).on('error', function(err) {
+        throw err;
+    });
 
 } else if (program.changelog) {
 
@@ -86,16 +72,36 @@ if (program.git) {
         return;
     }
 
-    if (log.log.length===0) {
+    if (clogLog.log().length===0) {
+        console.log('No entries found. Use clog -m to add one.');
+        return;
+    }
+
+    if (program.delete === true) { program.delete = 1; }
+
+    if (!program.trial) {
+        clogLog.delete(program.delete);
+    }
+
+    console.log(program.delete+' log entries deleted');
+
+} else if (program.id) {
+
+    if (!clogLog.check()) {
+        console.log('Log not found. Use clog -i to start.');
+        return;
+    }
+
+    if (clogLog.log().length===0) {
         console.log('No entries found. Use clog -m to add one.');
         return;
     }
 
     if (!program.trial) {
-        clogLog.delete();
+        clogLog.deleteByID(program.id);
     }
 
-    console.log('Log entry deleted');
+    console.log('Log entry '+program.id+' deleted');
 
 } else if (program.message) {
 

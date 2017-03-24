@@ -28,11 +28,20 @@ module.exports = {
 
     },
 
-    delete: function() {
+    delete: function(entries) {
 
-        var entries = this.log();
-        entries.log.shift();
-        this.write(entries);
+        var _log = this.log();
+        _log.log = _log.log.slice(entries, _log.log.length);
+        this.write(_log);
+
+    },
+
+
+    deleteByID: function(id) {
+
+        var _log = this.log();
+        _log.log.splice((_log.log.length - id), 1);
+        this.write(_log);
 
     },
 
