@@ -1,6 +1,4 @@
 
-//process.chdir(__dirname);
-
 var jsonfile = require('jsonfile');
 var logpath = '.clog';
 
