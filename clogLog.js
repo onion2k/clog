@@ -1,8 +1,8 @@
 
-process.chdir(__dirname);
+//process.chdir(__dirname);
 
 var jsonfile = require('jsonfile');
-var logpath = 'log.json';
+var logpath = '.clog';
 
 module.exports = {
 

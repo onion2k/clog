@@ -6,6 +6,7 @@ var table = require('cli-table');
 var dateFormat = require('dateformat');
 var through = require('through2');
 var gitRawCommits = require('git-raw-commits');
+var conventionalCommitsParser = require('conventional-commits-parser');
 
 clogLog.check();
 
@@ -13,7 +14,8 @@ program
     .version('0.0.1')
     .description('Changelog manager')
     .option('-i, --init', 'Start a changelog')
-    .option('-g, --git', 'git commits to changelog')
+    .option('-g, --git', 'Update changlog from git commits')
+    .option('-t, --trial', 'Trial run. Changes are not written to the log')
     .option('-c, --changelog [# of entries]', 'View changelog')
     .option('-d, --delete', 'Delete the latest changelog entry')
     .option('-m, --message [msg]', 'Add an entry to the changelog');
@@ -22,23 +24,30 @@ program.parse(process.argv);
 
 if (program.git) {
 
-    gitRawCommits()
-        .pipe(through(function(chunk, enc, cb) {
-            chunk = chunk.toString();
+    var i = 0;
 
-            if (i === 0) {
-                expect(chunk).to.equal('Third commit\n\n');
-            } else if (i === 1) {
-                expect(chunk).to.equal('Second commit\n\n');
-            } else {
-                expect(chunk).to.equal('First commit\n\n');
+    var options = {
+        transform:
+            (function() {
+              through.obj(function(chunk, enc, cb) {
+                console.log("custom transform called ... ");
+                cb(null, chunk);
+              })
             }
+          )()
+        }
 
-            i++;
+    gitRawCommits({ since: '2017-03-23', source: true })
+        .pipe(conventionalCommitsParser())
+        .pipe(through({ objectMode: true }, function(chunk, enc, cb) {
+            if (!program.trial) {
+                clogLog.append(chunk.header.trim());
+            } else {
+                console.log('Log updated: ', chunk.header.trim());
+            }
             cb();
         }, function() {
-            expect(i).to.equal(3);
-            done();
+            console.log("updated from git, updating meta");
         }));
 
 } else if (program.changelog) {
@@ -48,7 +57,7 @@ if (program.git) {
         return;
     }
 
-    if (log.log.length===0) {
+    if (clogLog.log().log.length===0) {
         console.log('No entries found. Use clog -m to add one.');
         return;
     }
@@ -60,11 +69,11 @@ if (program.git) {
         colWidths: [4, 75, 21]
     });
 
-    var entries = log.log.slice(0, 10);
+    var entries = clogLog.read(10);
 
     for (entry in entries) {
         logtable.push(
-            [parseInt(entry)+1, entries[entry].m, dateFormat(entries[entry].d, "dd/mm/yyyy h:MM:ss")]
+            [parseInt(entries.length)-entry, entries[entry].m, dateFormat(entries[entry].d, "dd/mm/yyyy h:MM:ss")]
         );
     }
 
@@ -82,16 +91,20 @@ if (program.git) {
         return;
     }
 
-    clogLog.delete();
+    if (!program.trial) {
+        clogLog.delete();
+    }
 
     console.log('Log entry deleted');
 
 } else if (program.message) {
 
-    if (program.args.length > 1) { program.message = program.message + ' ' + program.args.join(' '); }
+    if (program.args.length > 0) { program.message = program.message + ' ' + program.args.join(' '); }
 
-    clogLog.append(program.message);
-    console.log('Log updated ', program.message);
+    if (!program.trial) {
+        clogLog.append(program.message);
+    }
+    console.log('Log updated: ', program.message);
 
 } else {
 
