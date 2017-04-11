@@ -1,6 +1,6 @@
 {
   "name": "changelog",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Command line changelogging tool",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "commander": "^2.9.0",
     "dateformat": "^2.0.0",
     "git-commits": "^1.3.0",
-    "jsonfile": "^2.4.0"
+    "jsonfile": "^2.4.0",
+    "vorpal": "^1.12.0"
   }
 }
