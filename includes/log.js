@@ -92,8 +92,6 @@ module.exports = {
 
     write: function(entries){
 
-        console.log(entries)
-
         jsonfile.writeFileSync(logpath, entries);
 
     }

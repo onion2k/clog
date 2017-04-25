@@ -3,13 +3,12 @@
 var program = require('commander');
 var table = require('cli-table');
 var dateFormat = require('dateformat');
+var jsonfile = require('jsonfile');
 
 var log = require('./includes/log');
 var commands = require('./includes/commands');
 var git = require('./includes/git');
 var interactive = require('./includes/interactive');
-
-var localpackagejson = require(process.cwd()+'/package.json');
 
 program
     .version('0.0.1')
@@ -33,6 +32,14 @@ program.on('--help', function(){
 });
 
 program.parse(process.argv);
+
+let localpackagejson;
+
+try {
+    localpackagejson = jsonfile.readFileSync(process.cwd()+'/package.json');
+} catch(e) {
+    localpackagejson = { version: 0 };
+}
 
 if (program.git) {
 
@@ -125,20 +132,22 @@ if (program.git) {
     if (program.changelog === true) { program.changelog = 10; }
 
     let width = process.stdout.columns - 4;
-    let widths = [4, width-30, 22, 3]
+    let widths = [3, 4, width-30, 22]
 
     var logtable = new table({
-        head: ['ID', 'Message', 'Date', ''],
+        head: ['', 'ID', 'Message', 'Date'],
         colWidths: widths
     });
 
     var entries = log.read(10);
-
-
-
+console.log(entries)
     for (entry in entries) {
+        var c = entries[entry].confirmed || false;
+        var id = entries[entry].id || '-';
+        var m = entries[entry].m || '';
+        var d = dateFormat(entries[entry].d, "dd/mm/yyyy h:MM:ss");
         logtable.push(
-            [entries[entry].id, entries[entry].m, dateFormat(entries[entry].d, "dd/mm/yyyy h:MM:ss"), (entries[entry].confirmed?'✓':'✗')]
+            [(c?'✓':'✗'), id, m, d]
         );
     }
 
