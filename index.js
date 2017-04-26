@@ -43,7 +43,7 @@ try {
 
 if (program.git) {
 
-     git.write(log, program);
+    git.write(log, program);
 
 } else if (program.review) {
 
@@ -58,11 +58,11 @@ if (program.git) {
 
     interactive.start(log, program.review);
 
-} else if (program.deletebynum) {
+} else if (program.deletelast) {
 
     /**
-     * Delete an entry
-     */
+    * Delete an entry
+    */
 
     if (!log.check()) {
         console.log('Log not found. Use clog -m to add one.');
@@ -74,19 +74,22 @@ if (program.git) {
         return;
     }
 
-    if (program.deletebynum === true) { program.deletebynum = 1; }
-
-    if (!program.trial) {
-        log.delete(program.deletebynum);
+    if (program.deletelast === true) {
+        console.log('Number not specified.');
+        return;
     }
 
-    console.log(program.delete+' log entries deleted');
+    if (!program.trial) {
+        log.delete(program.deletelast);
+    }
+
+    console.log(program.deletelast+' log entries deleted');
 
 } else if (program.deletebyid) {
 
     /**
-     * Delete using an ID
-     */
+    * Delete using an ID
+    */
 
     if (!log.check()) {
         console.log('Log not found. Use clog -m to add one.');
@@ -107,8 +110,8 @@ if (program.git) {
 } else if (program.message) {
 
     /**
-     * Add a new entry
-     */
+    * Add a new entry
+    */
 
     if (program.args.length > 0) { program.message = program.message + ' ' + program.args.join(' '); }
 
@@ -121,8 +124,8 @@ if (program.git) {
 } else if (program.changelog) {
 
     /**
-     * Output the changelog
-     */
+    * Output the changelog
+    */
 
     if (!log.check()) {
         console.log('No log found. Use clog -m to add one.')
@@ -140,7 +143,7 @@ if (program.git) {
     });
 
     var entries = log.read(10);
-console.log(entries)
+
     for (entry in entries) {
         var c = entries[entry].confirmed || false;
         var id = entries[entry].id || '-';
@@ -156,8 +159,8 @@ console.log(entries)
 } else {
 
     /**
-     * Unknown or nothing, display the help
-     */
+    * Unknown or nothing, display the help
+    */
 
     program.help();
 

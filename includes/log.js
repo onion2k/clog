@@ -80,11 +80,17 @@ module.exports = {
 
     },
 
-    append: function(msg) {
+    entry: function(msg) {
 
         var id = this.getid();
+        return {  'id': id, 'm': msg, 'd': Date.now(), 'confirmed': false, 'written': false };
+
+    },
+
+    append: function(msg) {
+
         var entries = this.log();
-        entries.log.unshift({  'id': id, 'm': msg, 'd': Date.now(), 'confirmed': false });
+        entries.log.unshift(this.entry(msg));
 
         this.write(entries);
 
