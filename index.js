@@ -16,7 +16,7 @@ program
     .option('-c, --changelog [# of entries]', 'View the current changelog.')
     .option('-m, --message [msg]', 'Add an entry to the changelog.')
     .option('-g, --git', 'Automatically update the changelog from git commits.')
-    .option('-w, --write', 'Write out to CHANGELOG.md.')
+    .option('-e, --export', 'Export to CHANGELOG.md.')
     .option('-r, --review [# of entries]', 'Launch the interactive shell.')
     .option('-t, --trial', 'Trial run. Changes are not written to the log.')
     .option('')
@@ -54,9 +54,18 @@ if (program.git) {
 
     if (program.review === true) { program.review = 10; }
 
-    console.log("Entering review mode (Latest "+program.review +" entries).")
+    console.log("Entering review mode (Latest "+program.review +" entries).");
 
     interactive.start(log, program.review);
+
+} else if (program.export) {
+
+    if (!log.check()) {
+        console.log('Log not found. Use clog -m to add one.');
+        return;
+    }
+
+    console.log("Exporting entries to CHANGELOG.md. (not working yet)");
 
 } else if (program.deletelast) {
 

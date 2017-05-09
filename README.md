@@ -11,3 +11,7 @@ Clone the repo and run `npm install`. One day this might be npm-able.
 ## Usage
 
 Use `clog` to view the help.
+
+## Quickstart
+
+The main commands to use are `clog -c` to view the current log, and `clog -m` to add a new entry. When you want to move your entries out to a CHANGELOG.md file you can use `clog -e`.
